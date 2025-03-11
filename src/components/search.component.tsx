@@ -1,5 +1,6 @@
 import { CircleX, LoaderCircle, Search as SearchIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { Tag } from "./tag.component";
 
 interface Props {
   isFocusedCallback: (value: boolean) => void;
@@ -57,7 +58,19 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
           className={`absolute bg-white z-9 absolute top-[-12px] w-[680px] h-[386px] left-1/2 transform -translate-x-1/2 ${
             isSearchingResults ? "opacity-100" : "opacity-0"
           } shadow-[0px_4px_10px_0px_rgba(0,0,0,0.25)] rounded-[30px]`}
-        ></div>
+          style={{
+            padding: "77px 20px 40px 20px",
+          }}
+        >
+          <div className="flex gap-1 items-center">
+            <span className="font-semibold text-[10px]">Displaying:</span>
+            <Tag text="Upcoming" />
+            <Tag text="Bidding" />
+            <a className="font-semibold text-primary text-[10px] cursor-pointer">
+              Add
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );

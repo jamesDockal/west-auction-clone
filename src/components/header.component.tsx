@@ -74,7 +74,7 @@ export const Header: React.FC = () => {
           <div className="flex items-center justify-center w-8 h-8 gap-2.5 rounded-[20px] p-2 bg-gray-3">
             <Lock className="text-gray" />
           </div>
-          <a className=" font-semibold text-primary">Login/Register</a>
+          <a className="font-semibold text-primary">Login/Register</a>
         </div>
         <a className="cursor-pointer font-semibold text-primary">Contact</a>
       </div>
