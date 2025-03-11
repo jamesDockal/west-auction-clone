@@ -2,6 +2,7 @@ import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { DM_Sans } from "next/font/google";
 import "../styles/globals.css";
+import "react-loading-skeleton/dist/skeleton.css";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],

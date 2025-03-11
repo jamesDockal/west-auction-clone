@@ -1,6 +1,56 @@
 import { CircleX, LoaderCircle, Search as SearchIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Tag } from "./tag.component";
+import Skeleton from "react-loading-skeleton";
+
+const renderCardElement = () => (
+  <div className="flex gap-[10px] ">
+    <Skeleton width={60} height={60} borderRadius={6} />
+    <div className="flex gap-5">
+      <div className="flex flex-col gap-1">
+        <div className="w-[70px] h-[15px]">
+          <Skeleton borderRadius={10} />
+        </div>
+        <div className="w-[110px] h-[15px]">
+          <Skeleton borderRadius={10} />
+        </div>
+        <div className="w-[90px] h-[15px]">
+          <Skeleton borderRadius={10} />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <div className="w-[100px] h-[15px]">
+          <Skeleton borderRadius={10} />
+        </div>
+        <div className="w-[100px] h-[15px]">
+          <Skeleton borderRadius={10} />
+        </div>
+        <div className="w-[100px] h-[15px]">
+          <Skeleton borderRadius={10} />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const renderLoadingSkeletons = () => (
+  <>
+    <Skeleton width={120} height={15} borderRadius={12} />
+
+    <div className="flex gap-5 mt-5">
+      {renderCardElement()}
+      {renderCardElement()}
+    </div>
+
+    <div className="flex gap-5 mt-5 mb-5">
+      {renderCardElement()}
+      {renderCardElement()}
+    </div>
+
+    <Skeleton width={120} height={15} borderRadius={12} />
+  </>
+);
 
 interface Props {
   isFocusedCallback: (value: boolean) => void;
@@ -70,6 +120,10 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
               Add
             </a>
           </div>
+
+          <div className="w-full bg-[#E3E5E8] h-[1px] my-5" />
+
+          {renderLoadingSkeletons()}
         </div>
       </div>
     </div>
