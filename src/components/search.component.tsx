@@ -3,7 +3,9 @@ import React, { useEffect, useState } from "react";
 import { Tag } from "./tag.component";
 import Skeleton from "react-loading-skeleton";
 import { mockAuction, mockItem } from "@/mockdata";
-import { format } from "date-fns";
+import { IAuctionDTO, ILotDTO } from "@/interfaces/auction.interface";
+import { LotCard } from "./lot-card.component";
+import { AuctionCard } from "./auction-card.component";
 
 const renderCardElement = () => (
   <div className="flex gap-[10px] ">
@@ -61,33 +63,36 @@ interface Props {
 export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isSearchingResults, setIsSearchingResults] = useState(false);
-  // const [auctions, setAuctions] = useState([]);
-  const [lots, setLots] = useState({});
-  const [auctions, setAuction] = useState({});
+  const [lots, setLots] = useState({} as ILotDTO);
+  const [auctions, setAuction] = useState({} as IAuctionDTO);
 
   const handleFocus = () => setIsFocused(true);
   const handleBlur = () => {
     setIsFocused(false);
     setIsSearchingResults(false);
-    setLots({} as any);
-    setAuction({} as any);
   };
 
-  const searchResults = (searchParam: string) => {
+  const searchResults = async (searchParam: string) => {
     setIsSearchingResults(searchParam.length !== 0);
 
-    setTimeout(() => {
-      setLots(mockItem);
-      setAuction(mockAuction);
-      setIsSearchingResults(false);
-    }, 1000);
+    if (searchParam) {
+      setTimeout(() => {
+        setLots(mockItem);
+        setAuction(mockAuction);
+        setIsSearchingResults(false);
+      }, 1500);
+    } else {
+      setLots({} as ILotDTO);
+      setAuction({} as IAuctionDTO);
+    }
   };
 
   useEffect(() => {
     isFocusedCallback(isFocused);
   }, [isFocused, isFocusedCallback]);
 
-  const isSearchingOrHasResult = lots?.items?.length || isSearchingResults;
+  const isSearchingOrHasResult =
+    isFocused && (lots?.items?.length || isSearchingResults);
 
   return (
     <div className="">
@@ -121,11 +126,12 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
         </div>
 
         <div
-          className={`absolute bg-white z-9 absolute top-[-12px] w-[680px] min-h-[386px] left-1/2 transform -translate-x-1/2 ${
+          className={`absolute bg-white z-9 absolute top-[-12px] w-[680px] min-h-[386px] transform  ${
             isSearchingOrHasResult ? "opacity-100" : "opacity-0"
           } shadow-[0px_4px_10px_0px_rgba(0,0,0,0.25)] rounded-[30px]`}
           style={{
             padding: "77px 30px 40px 30px",
+            left: -20,
           }}
         >
           <div className="flex gap-1 items-center">
@@ -145,38 +151,12 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
               </span>
 
               <div className="flex flex-wrap gap-[20px] mt-[20px] ">
-                {lots.items?.map((item) => {
+                {lots.items?.map((lot) => {
                   const offer = lots.items_offers.find(
-                    (offer) => offer.name === item.title
+                    (offer) => offer.name === lot.title
                   )!;
 
-                  return (
-                    <div key={item.id} className="flex h-[60px]">
-                      <img
-                        className="w-[60px]  rounded-[6px] mr-[10px]"
-                        src={item.thumb_url}
-                      />
-                      <div className="w-[99px] overflow-hidden line-clamp-3 text-sm h-full">
-                        {item.title}
-                      </div>
-
-                      <div className="ml-[20px] text-xs text-[#394046] font-normal w-[111px]">
-                        <div className="flex flex-col items-end">
-                          <div className="bg-primary-1 font-bold text-center uppercase text-white py-[2px] px-[5px] text-[10px] w-[95px] mb-1">
-                            {format(offer?.availabilityStarts, "M/d/yy")} -{" "}
-                            {format(offer?.availabilityEnds, "M/d/yy")}
-                          </div>
-                          <div>
-                            <span>Current: </span>
-                            <span className="text-primary font-bold">
-                              $ {item.current_bid}
-                            </span>
-                          </div>
-                          <div className="mt-[2px]">{item.mapping_city}</div>
-                        </div>
-                      </div>
-                    </div>
-                  );
+                  return <LotCard key={lot.id} lot={lot} offer={offer} />;
                 })}
               </div>
               <div className="text-primary text-sm mt-5 cursor-pointer">
@@ -190,31 +170,9 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
               </span>
 
               <div className="flex flex-wrap gap-[20px] mt-[20px] ">
-                {auctions?.data?.map((auction) => {
-                  console.log("auction?.starts", auction?.starts);
-                  return (
-                    <div key={auction.id} className="flex">
-                      <div className="w-[185px] h-[44px]">
-                        <span className="italic font-normal text-xs text-[#394046]">
-                          {auction.city}
-                        </span>
-                        <div className="overflow-hidden line-clamp-2 text-sm">
-                          {auction.title}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col items-end w-[95px] ml-5 ">
-                        <div className="bg-primary-1 font-bold text-center uppercase text-white py-[2px] px-[5px] text-[10px] w-[95px] mb-1 whitespace-nowrap">
-                          {auction?.starts && format(auction?.starts, "M/d/yy")}{" "}
-                          - {auction?.ends && format(auction?.ends, "M/d/yy")}
-                        </div>
-                        <span className="text-primary bg-gray-3 px-1 py-[2px] text-sm">
-                          {auction.item_count} Lots
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
+                {auctions?.data?.map((auction) => (
+                  <AuctionCard key={auction.id} auction={auction} />
+                ))}
                 <div className="text-primary text-sm mt-5 cursor-pointer">
                   Show all 12 matching lots »
                 </div>
