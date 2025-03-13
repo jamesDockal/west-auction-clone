@@ -126,13 +126,9 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
         </div>
 
         <div
-          className={`absolute bg-white z-9 absolute top-[-12px] w-[680px] min-h-[386px] transform  ${
+          className={`absolute bg-white z-9 absolute top-[-12px] w-[680px] min-h-[386px] transform pt-[77px] pr-[30px] pb-[40px] pl-[30px] left-[-20px] ${
             isSearchingOrHasResult ? "opacity-100" : "opacity-0"
           } shadow-[0px_4px_10px_0px_rgba(0,0,0,0.25)] rounded-[30px]`}
-          style={{
-            padding: "77px 30px 40px 30px",
-            left: -20,
-          }}
         >
           <div className="flex gap-1 items-center">
             <span className="text-[10px]">Displaying:</span>
