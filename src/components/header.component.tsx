@@ -34,15 +34,15 @@ export const Header: React.FC = () => {
 
       <div
         className={`
-        transition-all duration-300 flex items-center sm:w-[659px] gap-[30px]
-        ${isSearchBarFocused && "flex-1 sm:flex-none"}
+          flex items-center sm:w-[659px] gap-[30px] relative
+          ${isSearchBarFocused && "flex-1 sm:flex-none"}
         `}
       >
         <Search isFocusedCallback={setIsSearchBarFocused} />
 
         <div
-          className={`hidden sm:flex items-center transition-all duration-100 gap-[30px] overflow-hidden ${
-            isSearchBarFocused ? "w-0 opacity-0 absolute" : "w-full"
+          className={`hidden sm:flex items-center gap-[30px] overflow-hidden ${
+            isSearchBarFocused ? "w-0 opacity-0 absolute right-0" : "w-full"
           }`}
         >
           <a className="whitespace-nowrap">Online Auctions</a>
