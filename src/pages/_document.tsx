@@ -1,4 +1,9 @@
+import { Metadata } from "next";
 import { Html, Head, Main, NextScript } from "next/document";
+
+export const metadata: Metadata = {
+  title: "West Auction",
+};
 
 export default function Document() {
   return (
