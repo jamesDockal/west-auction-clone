@@ -34,7 +34,9 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
     .filter(([, value]) => value === true)
     .map(([key]) => key);
 
-  const handleFocus = () => setIsFocused(true);
+  const focusOnSearch = () => {
+    setIsFocused(true);
+  };
 
   const debouncedSearch = useRef<
     DebouncedFunc<(searchParam: string) => Promise<void>>
@@ -138,31 +140,28 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
   const isSearchingOrHasLots = lotsData.lots?.length || isSearchingResults;
   const shouldRenderOverlay =
     isFocused && (isSearchingOrHasLots || wasNoDataFound);
-  const shouldIncreaseSearchBarSize =
-    isFocused || isSearchingOrHasLots || wasNoDataFound;
 
   return (
     <>
       <div ref={containerRef} className="w-full sm:w-auto">
         <div
           className={`transition-all duration-300  relative flex items-center w-full 
-            ${shouldIncreaseSearchBarSize ? "sm:w-[640px]" : "sm:w-[130px]"}
+            ${isFocused ? "sm:w-[640px]" : "sm:w-[130px]"}
           `}
         >
           <div className="absolute z-10 w-full">
             <div
               className={`
               absolute  top-1/2 transform -translate-y-1/2 text-gray-2 w-[24px] h-[24px]
-              ${isFocused ? "left-[12px]" : "left-[0 sm:left-[12px]"}
+              ${isFocused ? "left-[12px]" : "left-[-24px] sm:left-[12px]"}
               `}
             >
               {isSearchingResults ? (
                 <LoaderCircle className="animate-spin" />
               ) : (
                 <SearchIcon
-                  onClick={() => {
-                    setIsFocused(true);
-                  }}
+                  className="cursor-pointer"
+                  onClick={focusOnSearch}
                 />
               )}
             </div>
@@ -172,12 +171,16 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
                 isFocused && "border-2"
               }`}
               placeholder={isFocused ? "What are you looking for?" : "Search"}
-              onFocus={handleFocus}
+              onKeyDown={focusOnSearch}
+              onClick={focusOnSearch}
               onChange={(e) => searchResults(e.target.value)}
             />
             {isFocused && (
               <CircleX
-                onMouseDown={clearSearchInput}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  clearSearchInput();
+                }}
                 className="absolute right-[12px] top-1/2 transform -translate-y-1/2 text-gray-2 hover:text-primary w-[24px] h-[24px] cursor-pointer"
               />
             )}

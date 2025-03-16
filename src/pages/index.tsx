@@ -7,7 +7,7 @@ export default function Home() {
       <Head>
         <title>West Auction</title>
       </Head>
-      <div className="px-0 sm:px-[76px]">
+      <div className="px-0 sm:px-[76px] sm:margin-[10px]">
         <Header />
       </div>
     </>

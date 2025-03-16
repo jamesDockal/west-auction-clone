@@ -7,7 +7,7 @@ export const Header: React.FC = () => {
   const [isSearchBarFocused, setIsSearchBarFocused] = useState(false);
 
   return (
-    <div className="flex justify-between items-center bg-white text-black h-[53px] sm:h-[50px] px-6 sm:px-8 w-full p-3">
+    <header className="flex justify-between items-center bg-white text-black h-[53px] sm:h-[50px] px-6 sm:px-8 w-full p-3 mt-0 sm:mt-[10px]">
       <div
         className={`transition-all duration-300 sm:hidden ${
           isSearchBarFocused ? "w-0 opacity-0" : "w-[24px]"
@@ -65,6 +65,6 @@ export const Header: React.FC = () => {
         </div>
         <a className="cursor-pointer text-primary">Contact</a>
       </div>
-    </div>
+    </header>
   );
 };
