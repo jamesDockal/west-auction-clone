@@ -5,18 +5,14 @@ type Props = {
   filters: {
     [key: string]: boolean;
   };
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  setFilters: Function;
+  setFilters: (key: string, newValue: boolean) => void;
 };
 
 export const FilterOverlay: React.FC<Props> = ({ filters, setFilters }) => {
   const filtersKeys = Object.keys(filters);
 
   const handleCheckBoxClick = (key: string, newValue: boolean) => {
-    setFilters({
-      ...filters,
-      [key]: newValue,
-    });
+    setFilters(key, newValue);
   };
 
   return (

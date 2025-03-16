@@ -81,9 +81,25 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
     searchInputRef.current!.value = "";
   };
 
-  const onFiltersChanged = (newFilters: typeof filters) => {
+  const onFiltersChanged = (key: string, newValue: boolean) => {
+    let newFilters;
+    if (key === "Closed") {
+      newFilters = {
+        Upcoming: false,
+        "Bidding Now": false,
+        Closed: newValue,
+      };
+    } else {
+      newFilters = {
+        ...filters,
+        Closed: false,
+        [key]: newValue,
+      };
+    }
+
     setFilters(newFilters);
     setIsSearchingResults(true);
+
     debouncedSearch(searchInputRef.current!.value);
   };
 
