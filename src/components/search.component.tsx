@@ -3,9 +3,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { Tag } from "./tag.component";
 import { AuctionService } from "@/services/auction.service";
 import { IGetAuctionsDTO, IGetLotsDTO } from "@/interfaces/auction.interface";
-import { debounce } from "@/utils/debounce.util";
 import { SearchBarOverlay } from "./search-bar-overlay.component";
 import { FilterOverlay } from "./filter-overlay.component";
+import debounce from "lodash/debounce";
+import { DebouncedFunc } from "lodash";
 
 interface Props {
   isFocusedCallback: (value: boolean) => void;
@@ -35,7 +36,9 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
 
   const handleFocus = () => setIsFocused(true);
 
-  const debouncedSearch = useRef(
+  const debouncedSearch = useRef<
+    DebouncedFunc<(searchParam: string) => Promise<void>>
+  >(
     debounce(async (searchParam: string) => {
       const _lotData = await auctionService.getLots({
         search: searchParam,
@@ -58,6 +61,8 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
     if (newIsSearchingResults !== isSearchingResults) {
       setIsSearchingResults(newIsSearchingResults);
     }
+
+    debouncedSearch.cancel();
 
     if (searchParam) {
       debouncedSearch(searchParam);
