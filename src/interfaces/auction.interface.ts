@@ -1,11 +1,33 @@
-import { mockAuction, mockItem } from "@/mockdata";
+export interface IQueryDTO {
+  search: string;
+  limit: number;
+}
 
-export type ILotDTO = typeof mockItem;
+export interface IGetLotsDTO {
+  lots: ILot[];
+  total: number;
+}
 
-export type ILot = (typeof mockItem.items)[0];
+export interface ILot {
+  id: string | number;
+  thumb_url: string;
+  title: string;
+  availabilityStarts: Date;
+  availabilityEnds: Date;
+  current_bid: number;
+  mapping_city: string;
+}
 
-export type IAuctionDTO = typeof mockAuction;
+export interface IGetAuctionsDTO {
+  auctions: IAuction[];
+  total: number;
+}
 
-export type IOffer = (typeof mockItem.items_offers)[0];
-
-export type IAuction = (typeof mockAuction.data)[0];
+export type IAuction = {
+  id: string | number;
+  city: string;
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  quantity: number;
+};

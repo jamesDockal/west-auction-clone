@@ -1,11 +1,12 @@
 import { CircleX, LoaderCircle, Search as SearchIcon } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Tag } from "./tag.component";
 import Skeleton from "react-loading-skeleton";
-import { mockAuction, mockItem } from "@/mockdata";
-import { IAuctionDTO, ILotDTO } from "@/interfaces/auction.interface";
 import { LotCard } from "./lot-card.component";
 import { AuctionCard } from "./auction-card.component";
+import { AuctionService } from "@/services/auction.service";
+import { IGetAuctionsDTO, IGetLotsDTO } from "@/interfaces/auction.interface";
+import { debounce } from "@/utils/debounce.util";
 
 const renderCardElement = () => (
   <div className="flex gap-[10px] ">
@@ -63,8 +64,12 @@ interface Props {
 export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isSearchingResults, setIsSearchingResults] = useState(false);
-  const [lots, setLots] = useState({} as ILotDTO);
-  const [auctions, setAuction] = useState({} as IAuctionDTO);
+  const [lotsData, setLotsData] = useState({} as IGetLotsDTO);
+  const [auctionsData, setAuctionsData] = useState({} as IGetAuctionsDTO);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const auctionService = new AuctionService();
 
   const handleFocus = () => setIsFocused(true);
   const handleBlur = () => {
@@ -72,33 +77,49 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
     setIsSearchingResults(false);
   };
 
+  const debouncedSearch = useRef(
+    debounce(async (searchParam: string) => {
+      const _lotData = await auctionService.getLots({
+        search: searchParam,
+        limit: 4,
+      });
+      setLotsData(_lotData);
+
+      const _auctionsData = await auctionService.getAuctions({
+        search: searchParam,
+        limit: 4,
+      });
+      setAuctionsData(_auctionsData);
+
+      setIsSearchingResults(false);
+    }, 500)
+  ).current;
+
   const searchResults = async (searchParam: string) => {
     setIsSearchingResults(searchParam.length !== 0);
 
     if (searchParam) {
-      setTimeout(() => {
-        setLots(mockItem);
-        setAuction(mockAuction);
-        setIsSearchingResults(false);
-      }, 1500);
+      debouncedSearch(searchParam);
     } else {
-      setLots({} as ILotDTO);
-      setAuction({} as IAuctionDTO);
+      setLotsData({} as IGetLotsDTO);
     }
+  };
+
+  const clearSearchInput = () => {
+    searchInputRef.current!.value = "";
   };
 
   useEffect(() => {
     isFocusedCallback(isFocused);
   }, [isFocused, isFocusedCallback]);
 
-  const isSearchingOrHasResult =
-    isFocused && (lots?.items?.length || isSearchingResults);
+  const isSearchingOrHasResult = lotsData?.lots?.length || isSearchingResults;
 
   return (
     <div className="">
       <div
         className={`fixed inset-0 z-0 transition-all duration-300 select-none pointer-events-none bg-[#5C6670] ${
-          isSearchingOrHasResult ? "opacity-30" : "opacity-0"
+          isSearchingOrHasResult && isFocused ? "opacity-30" : "opacity-0"
         }`}
       />
 
@@ -114,6 +135,7 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
             <SearchIcon className="absolute left-[12px] top-1/2 transform -translate-y-1/2 text-gray-2 w-[24px] h-[24px]" />
           )}
           <input
+            ref={searchInputRef}
             className={`w-full placeholder-gray-2 pt-[1px] rounded-[30px] border-2 cursor-pointer pl-[52px] h-[44px] bg-white outline-none`}
             placeholder={isFocused ? "What are you looking for?" : "Search"}
             onFocus={handleFocus}
@@ -121,13 +143,16 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
             onChange={(e) => searchResults(e.target.value)}
           />
           {isFocused && (
-            <CircleX className="absolute right-[12px] top-1/2 transform -translate-y-1/2 text-gray-2 w-[24px] h-[24px] " />
+            <CircleX
+              onMouseDown={clearSearchInput}
+              className="absolute right-[12px] top-1/2 transform -translate-y-1/2 text-gray-2 hover:text-primary w-[24px] h-[24px] cursor-pointer"
+            />
           )}
         </div>
 
         <div
           className={`absolute bg-white z-9 absolute top-[-12px] w-[680px] min-h-[386px] transform pt-[77px] pr-[30px] pb-[40px] pl-[30px] left-[-20px] ${
-            isSearchingOrHasResult ? "opacity-100" : "opacity-0"
+            isSearchingOrHasResult && isFocused ? "opacity-100" : "opacity-0"
           } shadow-[0px_4px_10px_0px_rgba(0,0,0,0.25)] rounded-[30px]`}
         >
           <div className="flex gap-1 items-center">
@@ -147,16 +172,12 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
               </span>
 
               <div className="flex flex-wrap gap-[20px] mt-[20px] ">
-                {lots.items?.map((lot) => {
-                  const offer = lots.items_offers.find(
-                    (offer) => offer.name === lot.title
-                  )!;
-
-                  return <LotCard key={lot.id} lot={lot} offer={offer} />;
-                })}
+                {lotsData?.lots?.map((lot) => (
+                  <LotCard key={lot.id} lot={lot} />
+                ))}
               </div>
               <div className="text-primary text-sm mt-5 cursor-pointer">
-                Show all 12 matching lots »
+                Show all {lotsData.total} matching lots »
               </div>
 
               <div className="w-full bg-[#E3E5E8] h-[1px] my-5" />
@@ -166,11 +187,11 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
               </span>
 
               <div className="flex flex-wrap gap-[20px] mt-[20px] ">
-                {auctions?.data?.map((auction) => (
+                {auctionsData?.auctions?.map((auction) => (
                   <AuctionCard key={auction.id} auction={auction} />
                 ))}
                 <div className="text-primary text-sm mt-5 cursor-pointer">
-                  Show all 12 matching lots »
+                  Show all {auctionsData?.total} matching lots »
                 </div>
               </div>
             </>
