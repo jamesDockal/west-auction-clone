@@ -7,6 +7,7 @@ import { AuctionCard } from "./auction-card.component";
 import { AuctionService } from "@/services/auction.service";
 import { IGetAuctionsDTO, IGetLotsDTO } from "@/interfaces/auction.interface";
 import { debounce } from "@/utils/debounce.util";
+import { NoResultFound } from "./no-result-found.component";
 
 const renderCardElement = () => (
   <div className="flex gap-[10px] ">
@@ -66,6 +67,7 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
   const [isSearchingResults, setIsSearchingResults] = useState(false);
   const [lotsData, setLotsData] = useState({} as IGetLotsDTO);
   const [auctionsData, setAuctionsData] = useState({} as IGetAuctionsDTO);
+  const [wasNoLotFound, setWasNoLotFound] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -90,18 +92,23 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
         limit: 4,
       });
       setAuctionsData(_auctionsData);
-
       setIsSearchingResults(false);
+      setWasNoLotFound(_lotData.lots.length === 0);
     }, 500)
   ).current;
 
   const searchResults = async (searchParam: string) => {
-    setIsSearchingResults(searchParam.length !== 0);
+    const newIsSearchingResults = searchParam.length !== 0;
+    if (newIsSearchingResults !== isSearchingResults) {
+      setIsSearchingResults(newIsSearchingResults);
+    }
 
     if (searchParam) {
       debouncedSearch(searchParam);
     } else {
       setLotsData({} as IGetLotsDTO);
+      setAuctionsData({} as IGetAuctionsDTO);
+      setWasNoLotFound(false);
     }
   };
 
@@ -113,19 +120,23 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
     isFocusedCallback(isFocused);
   }, [isFocused, isFocusedCallback]);
 
-  const isSearchingOrHasResult = lotsData?.lots?.length || isSearchingResults;
+  const isSearchingOrHasLots = lotsData.lots?.length || isSearchingResults;
 
   return (
     <div className="">
       <div
         className={`fixed inset-0 z-0 transition-all duration-300 select-none pointer-events-none bg-[#5C6670] ${
-          isSearchingOrHasResult && isFocused ? "opacity-30" : "opacity-0"
+          isFocused && (isSearchingOrHasLots || wasNoLotFound)
+            ? "opacity-30"
+            : "opacity-0"
         }`}
       />
 
       <div
         className={`relative transition-all duration-300 ${
-          isSearchingOrHasResult || isFocused ? "w-[640px]" : "w-[130px]"
+          isFocused || isSearchingOrHasLots || wasNoLotFound
+            ? "w-[640px]"
+            : "w-[130px]"
         } h-[44px]`}
       >
         <div className="absolute z-10 w-full">
@@ -151,9 +162,11 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
         </div>
 
         <div
-          className={`absolute bg-white z-9 absolute top-[-12px] w-[680px] min-h-[386px] transform pt-[77px] pr-[30px] pb-[40px] pl-[30px] left-[-20px] ${
-            isSearchingOrHasResult && isFocused ? "opacity-100" : "opacity-0"
-          } shadow-[0px_4px_10px_0px_rgba(0,0,0,0.25)] rounded-[30px]`}
+          className={`absolute bg-white z-9 absolute top-[-12px] w-[680px] min-h-[386px] transform pt-[77px] pr-[30px] pb-[40px] pl-[30px] left-[-20px] shadow-[0px_4px_10px_0px_rgba(0,0,0,0.25)] rounded-[30px] flex flex-col ${
+            isFocused && (isSearchingOrHasLots || wasNoLotFound)
+              ? "opacity-100"
+              : "opacity-0"
+          }`}
         >
           <div className="flex gap-1 items-center">
             <span className="text-[10px]">Displaying:</span>
@@ -165,37 +178,41 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
           <div className="w-full bg-[#E3E5E8] h-[1px] my-5" />
 
           {isSearchingResults && renderLoadingSkeletons()}
-          {!isSearchingResults && (
-            <>
-              <span className="font-bold text-gray-2 text-sm">
-                Matching Lots
-              </span>
 
-              <div className="flex flex-wrap gap-[20px] mt-[20px] ">
-                {lotsData?.lots?.map((lot) => (
-                  <LotCard key={lot.id} lot={lot} />
-                ))}
-              </div>
-              <div className="text-primary text-sm mt-5 cursor-pointer">
-                Show all {lotsData.total} matching lots »
-              </div>
+          {!isSearchingResults &&
+            (wasNoLotFound ? (
+              <NoResultFound />
+            ) : (
+              <>
+                <span className="font-bold text-gray-2 text-sm">
+                  Matching Lots
+                </span>
 
-              <div className="w-full bg-[#E3E5E8] h-[1px] my-5" />
-
-              <span className="font-bold text-gray-2 text-sm">
-                Matching Auctions
-              </span>
-
-              <div className="flex flex-wrap gap-[20px] mt-[20px] ">
-                {auctionsData?.auctions?.map((auction) => (
-                  <AuctionCard key={auction.id} auction={auction} />
-                ))}
-                <div className="text-primary text-sm mt-5 cursor-pointer">
-                  Show all {auctionsData?.total} matching lots »
+                <div className="flex flex-wrap gap-[20px] mt-[20px] ">
+                  {lotsData?.lots?.map((lot) => (
+                    <LotCard key={lot.id} lot={lot} />
+                  ))}
                 </div>
-              </div>
-            </>
-          )}
+                <div className="text-primary text-sm mt-5 cursor-pointer">
+                  Show all {lotsData.total} matching lots »
+                </div>
+
+                <div className="w-full bg-[#E3E5E8] h-[1px] my-5" />
+
+                <span className="font-bold text-gray-2 text-sm">
+                  Matching Auctions
+                </span>
+
+                <div className="flex flex-wrap gap-[20px] mt-[20px] ">
+                  {auctionsData?.auctions?.map((auction) => (
+                    <AuctionCard key={auction.id} auction={auction} />
+                  ))}
+                  <div className="text-primary text-sm mt-5 cursor-pointer">
+                    Show all {auctionsData?.total} matching lots »
+                  </div>
+                </div>
+              </>
+            ))}
         </div>
       </div>
     </div>
