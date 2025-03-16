@@ -188,7 +188,7 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
 
           {shouldRenderOverlay && (
             <div
-              className={`absolute bg-white z-9 top-[-38px] min-h-[386px] transform pt-[77px] pr-[30px] pb-[40px] pl-[30px] left-[-34px] shadow-[0px_4px_10px_0px_rgba(0,0,0,0.25)] flex flex-col w-[100vw] rounded-none md:max-w-[680px] md:rounded-[30px]`}
+              className={`absolute bg-white z-9 top-[-38px] min-h-[386px] transform pt-[77px] pr-[30px] pb-[40px] pl-[30px] left-[-24px] shadow-[0px_4px_10px_0px_rgba(0,0,0,0.25)] flex flex-col w-[100vw] rounded-none md:max-w-[680px] md:rounded-[30px]`}
             >
               <div className="flex gap-1 items-center">
                 <span className="text-[10px]">Displaying:</span>
