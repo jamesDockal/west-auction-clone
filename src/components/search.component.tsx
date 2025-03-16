@@ -153,7 +153,7 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
             <div
               className={`
               absolute  top-1/2 transform -translate-y-1/2 text-gray-2 w-[24px] h-[24px]
-              ${isFocused ? "left-[12px]" : "left-[-24px] sm:left-[12px]"}
+              ${isFocused ? "left-[12px]" : "left-0 sm:left-[12px]"}
               `}
             >
               {isSearchingResults ? (
