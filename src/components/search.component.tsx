@@ -16,7 +16,7 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
   const [isSearchingResults, setIsSearchingResults] = useState(false);
   const [lotsData, setLotsData] = useState({} as IGetLotsDTO);
   const [auctionsData, setAuctionsData] = useState({} as IGetAuctionsDTO);
-  const [wasNoLotFound, setWasNoLotFound] = useState(false);
+  const [wasNoDataFound, setWasNoDataFound] = useState(false);
   const [filters, setFilters] = useState({
     Upcoming: true,
     "Bidding Now": true,
@@ -49,7 +49,7 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
       });
       setAuctionsData(_auctionsData);
       setIsSearchingResults(false);
-      setWasNoLotFound(_lotData.lots.length === 0);
+      setWasNoDataFound(_lotData.lots.length === 0);
     }, 500)
   ).current;
 
@@ -64,16 +64,31 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
     } else {
       setLotsData({} as IGetLotsDTO);
       setAuctionsData({} as IGetAuctionsDTO);
-      setWasNoLotFound(false);
+      setWasNoDataFound(false);
     }
   };
 
   const clearSearchInput = () => {
+    if (!searchInputRef.current!.value) {
+      return setIsFocused(false);
+    }
+
     searchInputRef.current!.value = "";
+  };
+
+  const onFiltersChanged = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+    setIsSearchingResults(true);
+    debouncedSearch(searchInputRef.current!.value);
   };
 
   useEffect(() => {
     isFocusedCallback(isFocused);
+    if (!isFocused && !searchInputRef.current!.value) {
+      setLotsData({} as IGetLotsDTO);
+      setAuctionsData({} as IGetAuctionsDTO);
+      setWasNoDataFound(false);
+    }
   }, [isFocused, isFocusedCallback]);
 
   useEffect(() => {
@@ -99,37 +114,44 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
     };
   }, []);
 
-  useEffect(() => {
-    setIsSearchingResults(true);
-    debouncedSearch(searchInputRef.current!.value!);
-  }, [filters]);
-
   const isSearchingOrHasLots = lotsData.lots?.length || isSearchingResults;
   const shouldRenderOverlay =
-    isFocused && (isSearchingOrHasLots || wasNoLotFound);
-  const shouldIncreaseSearchBar =
-    isFocused || isSearchingOrHasLots || wasNoLotFound;
+    isFocused && (isSearchingOrHasLots || wasNoDataFound);
+  const shouldIncreaseSearchBarSize =
+    isFocused || isSearchingOrHasLots || wasNoDataFound;
 
   return (
     <>
-      <div ref={containerRef}>
+      <div ref={containerRef} className="w-full sm:w-auto">
         <div
-          className={`relative transition-all duration-300 h-[44px] ${
-            shouldIncreaseSearchBar ? "w-[640px]" : "w-[130px]"
-          } `}
+          className={`transition-all duration-300  relative flex items-center w-full 
+            ${shouldIncreaseSearchBarSize ? "sm:w-[640px]" : "sm:w-[130px]"}
+          `}
         >
           <div className="absolute z-10 w-full">
-            {isSearchingResults ? (
-              <LoaderCircle className="absolute left-[12px] top-1/2 transform -translate-y-1/2 text-gray-2 w-[24px] h-[24px] animate-spin" />
-            ) : (
-              <SearchIcon className="absolute left-[12px] top-1/2 transform -translate-y-1/2 text-gray-2 w-[24px] h-[24px]" />
-            )}
+            <div
+              className={`
+              absolute  top-1/2 transform -translate-y-1/2 text-gray-2 w-[24px] h-[24px]
+              ${isFocused ? "left-[12px]" : "left-[0 sm:left-[12px]"}
+              `}
+            >
+              {isSearchingResults ? (
+                <LoaderCircle className="animate-spin" />
+              ) : (
+                <SearchIcon
+                  onClick={() => {
+                    setIsFocused(true);
+                  }}
+                />
+              )}
+            </div>
             <input
               ref={searchInputRef}
-              className={`w-full placeholder-gray-2 pt-[1px] rounded-[30px] border-2 cursor-pointer pl-[52px] h-[44px] bg-white outline-none`}
+              className={`w-full placeholder-gray-2 pt-[1px] rounded-[30px] sm:border-2 cursor-pointer pl-[52px] h-[44px] bg-white outline-none ${
+                isFocused && "border-2"
+              }`}
               placeholder={isFocused ? "What are you looking for?" : "Search"}
               onFocus={handleFocus}
-              // onBlur={handleBlur}
               onChange={(e) => searchResults(e.target.value)}
             />
             {isFocused && (
@@ -140,41 +162,47 @@ export const Search: React.FC<Props> = ({ isFocusedCallback }) => {
             )}
           </div>
 
-          <div
-            className={`absolute bg-white z-9 absolute top-[-12px] w-[680px] min-h-[386px] transform pt-[77px] pr-[30px] pb-[40px] pl-[30px] left-[-20px] shadow-[0px_4px_10px_0px_rgba(0,0,0,0.25)] rounded-[30px] flex flex-col ${
-              shouldRenderOverlay ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <div className="flex gap-1 items-center">
-              <span className="text-[10px]">Displaying:</span>
-              {activeFilters.map((key) => (
-                <Tag key={key} text={key} />
-              ))}
+          {shouldRenderOverlay && (
+            <div
+              className={`absolute bg-white z-9 top-[-38px] min-h-[386px] transform pt-[77px] pr-[30px] pb-[40px] pl-[30px] left-[-34px] shadow-[0px_4px_10px_0px_rgba(0,0,0,0.25)] flex flex-col  
+w-[100vw] rounded-none  
+md:max-w-[680px] md:rounded-[30px]
+ `}
+            >
+              <div className="flex gap-1 items-center">
+                <span className="text-[10px]">Displaying:</span>
+                {activeFilters.map((key) => (
+                  <Tag key={key} text={key} />
+                ))}
 
-              <div className="relative">
-                <span
-                  className="text-primary text-[10px] cursor-pointer"
-                  onClick={() => setShowFilters(true)}
-                >
-                  Add
-                </span>
-                {showFilters && (
-                  <div ref={filterOverlayRef}>
-                    <FilterOverlay filters={filters} setFilters={setFilters} />
-                  </div>
-                )}
+                <div className="relative">
+                  <span
+                    className="text-primary text-[10px] cursor-pointer"
+                    onClick={() => setShowFilters(true)}
+                  >
+                    Add
+                  </span>
+                  {showFilters && (
+                    <div ref={filterOverlayRef}>
+                      <FilterOverlay
+                        filters={filters}
+                        setFilters={onFiltersChanged}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
+
+              <div className="w-full bg-[#E3E5E8] h-[1px] my-5" />
+
+              <SearchBarOverlay
+                isSearchingResults={isSearchingResults}
+                wasNoLotFound={wasNoDataFound}
+                lotsData={lotsData}
+                auctionsData={auctionsData}
+              />
             </div>
-
-            <div className="w-full bg-[#E3E5E8] h-[1px] my-5" />
-
-            <SearchBarOverlay
-              isSearchingResults={isSearchingResults}
-              wasNoLotFound={wasNoLotFound}
-              lotsData={lotsData}
-              auctionsData={auctionsData}
-            />
-          </div>
+          )}
         </div>
       </div>
 

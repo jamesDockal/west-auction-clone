@@ -30,4 +30,5 @@ body {
   color: var(--foreground);
   margin: 10px;
   font-weight: 600;
+  overflow-x: hidden;
 }

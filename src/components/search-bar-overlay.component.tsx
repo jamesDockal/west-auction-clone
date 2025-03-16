@@ -40,12 +40,12 @@ const renderLoadingSkeletons = () => (
   <>
     <Skeleton width={120} height={15} borderRadius={12} />
 
-    <div className="flex gap-5 mt-5">
+    <div className="flex flex-col sm:flex-row gap-5 mt-5">
       {renderCardElement()}
       {renderCardElement()}
     </div>
 
-    <div className="flex gap-5 mt-5 mb-5">
+    <div className="flex flex-col sm:flex-row gap-5 mt-5 mb-5">
       {renderCardElement()}
       {renderCardElement()}
     </div>
